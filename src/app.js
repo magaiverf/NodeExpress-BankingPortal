@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { accounts, users, writeJSON } = require('./data');
 
 const express = require('express');
 const app = express();
@@ -9,13 +10,6 @@ app.set('view engine', 'ejs'); // seta qual é o view engine do projeto
 
 app.use(express.static(path.join(__dirname, 'public'))); // informa qual é a pasta de arquivo estatico
 app.use(express.urlencoded({extended: true})); // ?
-
-// lê o arquivo e converte para um JS Object
-const accountData = fs.readFileSync(path.join(__dirname, 'json/accounts.json'), { encoding: 'utf8'});
-const accounts = JSON.parse(accountData);
-
-const userData = fs.readFileSync(path.join(__dirname, 'json/users.json'), { encoding: 'utf8'});
-const users = JSON.parse(userData);
 
 // cria uma rota get para o endereço '/'
 app.get('/', (req, res) => {
@@ -52,10 +46,7 @@ app.post('/transfer', (req, res) => {
     accounts[accountFromType].balance = accounts[accountFromType].balance - amount;
     accounts[accountToType].balance = accounts[accountToType].balance + amount;
 
-    let accountsJSON = JSON.stringify(accounts);
-
-    // escreve em um arquivo o valor de accountsJSON
-    fs.writeFileSync(path.join(__dirname, 'json/accounts.json'), accountsJSON, 'utf8');
+    writeJSON();
 
     res.render('transfer', { message: 'Transfer Completed'});
 });
@@ -70,8 +61,7 @@ app.post('/payment', (req, res) => {
     accounts.credit.balance = accounts.credit.balance - amount;
     accounts.credit.available = accounts.credit.available + amount;
 
-    const accountsJSON = JSON.stringify(accounts);
-    fs.writeFileSync(path.join(__dirname, 'json/accounts.json'), accountsJSON, 'utf8');
+    writeJSON();
 
     res.render('payment', { message: "Payment Successful", account: accounts.credit });
 });
